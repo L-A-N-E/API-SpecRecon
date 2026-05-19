@@ -1,0 +1,246 @@
+<mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+  <root>
+    <mxCell id="0" />
+    <mxCell id="1" parent="0" />
+
+    <mxCell id="title" value="ARQUITETURA DO SISTEMA – SPECRECON" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="400" y="20" width="800" height="30" as="geometry" />
+    </mxCell>
+    <mxCell id="subtitle" value="Visão geral dos componentes e comunicação entre as camadas" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;" vertex="1" parent="1">
+      <mxGeometry x="400" y="55" width="800" height="20" as="geometry" />
+    </mxCell>
+
+    <mxCell id="usuario_label" value="USUÁRIO" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="30" y="100" width="100" height="20" as="geometry" />
+    </mxCell>
+    <mxCell id="usuario_person" value="Usuário" style="shape=mxgraph.basic.person;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="55" y="130" width="50" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="usuario_monitor" value="" style="shape=mxgraph.cisco.computers_and_peripherals.pc;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+      <mxGeometry x="55" y="200" width="50" height="40" as="geometry" />
+    </mxCell>
+
+    <mxCell id="frontend_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;arcSize=5;" vertex="1" parent="1">
+      <mxGeometry x="160" y="90" width="260" height="330" as="geometry" />
+    </mxCell>
+    <mxCell id="frontend_title" value="FRONTEND&#xa;(React)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#0050a0;" vertex="1" parent="1">
+      <mxGeometry x="200" y="95" width="180" height="40" as="geometry" />
+    </mxCell>
+
+    <mxCell id="fe_ui" value="Interface do Usuário&#xa;Dashboards, tabelas, gráficos e formulários." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="175" y="145" width="230" height="70" as="geometry" />
+    </mxCell>
+    <mxCell id="fe_api" value="Consumo da API&#xa;Requisições HTTP (REST) para o backend." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="175" y="230" width="230" height="70" as="geometry" />
+    </mxCell>
+    <mxCell id="fe_nav" value="Navegação e Rotas&#xa;Gerenciamento de rotas e estados da aplicação." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="175" y="315" width="230" height="70" as="geometry" />
+    </mxCell>
+
+    <mxCell id="backend_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;arcSize=3;" vertex="1" parent="1">
+      <mxGeometry x="470" y="90" width="680" height="430" as="geometry" />
+    </mxCell>
+    <mxCell id="backend_title" value="BACKEND – API REST (Spring Boot)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#2d6a1f;" vertex="1" parent="1">
+      <mxGeometry x="580" y="95" width="460" height="30" as="geometry" />
+    </mxCell>
+
+    <mxCell id="camadas_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#4caf50;arcSize=3;" vertex="1" parent="1">
+      <mxGeometry x="480" y="130" width="420" height="370" as="geometry" />
+    </mxCell>
+    <mxCell id="camadas_title" value="CAMADAS DA APLICAÇÃO" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="490" y="133" width="400" height="25" as="geometry" />
+    </mxCell>
+
+    <mxCell id="controller_box" value="CONTROLLER LAYER&#xa;Camada responsável por expor os endpoints da API e tratar as requisições HTTP.&#xa;Spring Web MVC" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#4caf50;fontSize=11;align=left;spacingLeft=10;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+      <mxGeometry x="495" y="165" width="390" height="80" as="geometry" />
+    </mxCell>
+    <mxCell id="service_box" value="SERVICE LAYER&#xa;Camada com as regras de negócio da aplicação, orquestração e validações." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#4caf50;fontSize=11;align=left;spacingLeft=10;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+      <mxGeometry x="495" y="270" width="390" height="80" as="geometry" />
+    </mxCell>
+    <mxCell id="repository_box" value="REPOSITORY LAYER&#xa;Camada de acesso a dados utilizando Spring Data JPA para comunicação com o banco.&#xa;Spring Data JPA" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#4caf50;fontSize=11;align=left;spacingLeft=10;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+      <mxGeometry x="495" y="375" width="390" height="80" as="geometry" />
+    </mxCell>
+
+    <mxCell id="suporte_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#4caf50;arcSize=3;" vertex="1" parent="1">
+      <mxGeometry x="920" y="130" width="220" height="370" as="geometry" />
+    </mxCell>
+    <mxCell id="suporte_title" value="COMPONENTES DE SUPORTE" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="925" y="133" width="210" height="30" as="geometry" />
+    </mxCell>
+
+    <mxCell id="validacao_box" value="Validação&#xa;Bean Validation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#4caf50;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="930" y="175" width="200" height="55" as="geometry" />
+    </mxCell>
+    <mxCell id="migracao_box" value="Migração de Banco&#xa;Flyway" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#4caf50;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="930" y="248" width="200" height="55" as="geometry" />
+    </mxCell>
+    <mxCell id="lombok_box" value="Redução de Boilerplate&#xa;Lombok" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#4caf50;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="930" y="321" width="200" height="55" as="geometry" />
+    </mxCell>
+    <mxCell id="logs_box" value="Logs (Futuro)&#xa;SLF4J / Logback" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#4caf50;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="930" y="394" width="200" height="55" as="geometry" />
+    </mxCell>
+
+    <mxCell id="db_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;arcSize=5;" vertex="1" parent="1">
+      <mxGeometry x="1170" y="90" width="250" height="430" as="geometry" />
+    </mxCell>
+    <mxCell id="db_title" value="BANCO DE DADOS&#xa;(MySQL)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=13;fontStyle=1;fontColor=#5a0080;" vertex="1" parent="1">
+      <mxGeometry x="1175" y="95" width="240" height="40" as="geometry" />
+    </mxCell>
+    <mxCell id="db_entities_title" value="PRINCIPAIS ENTIDADES" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="1175" y="145" width="240" height="20" as="geometry" />
+    </mxCell>
+
+    <mxCell id="entity_vehicle" value="Vehicle&#xa;Informações dos veículos." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;fontSize=11;align=left;spacingLeft=10;" vertex="1" parent="1">
+      <mxGeometry x="1180" y="175" width="230" height="55" as="geometry" />
+    </mxCell>
+    <mxCell id="entity_spectype" value="Specification_Type&#xa;Tipos de especificações (Potência, Torque, ADAS...)." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;fontSize=11;align=left;spacingLeft=10;" vertex="1" parent="1">
+      <mxGeometry x="1180" y="248" width="230" height="55" as="geometry" />
+    </mxCell>
+    <mxCell id="entity_vehiclespec" value="Vehicle_Specification&#xa;Valores das especificações por veículo." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;fontSize=11;align=left;spacingLeft=10;" vertex="1" parent="1">
+      <mxGeometry x="1180" y="321" width="230" height="55" as="geometry" />
+    </mxCell>
+    <mxCell id="entity_user" value="User&#xa;Usuários do sistema e perfis de acesso." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9673a6;fontSize=11;align=left;spacingLeft=10;" vertex="1" parent="1">
+      <mxGeometry x="1180" y="394" width="230" height="55" as="geometry" />
+    </mxCell>
+
+    <mxCell id="scraping_box" value="COLETA DE DADOS (SCRAPING)&#xa;A coleta de dados é realizada no frontend (React). Os dados coletados são enviados para o backend através da API para processamento e armazenamento." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=11;align=left;spacingLeft=10;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+      <mxGeometry x="160" y="460" width="260" height="100" as="geometry" />
+    </mxCell>
+
+    <mxCell id="fontes_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;arcSize=5;dashed=1;" vertex="1" parent="1">
+      <mxGeometry x="30" y="620" width="280" height="170" as="geometry" />
+    </mxCell>
+    <mxCell id="fontes_title" value="FONTES EXTERNAS&#xa;(Dados Públicos)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontStyle=1;fontColor=#b85800;" vertex="1" parent="1">
+      <mxGeometry x="35" y="625" width="270" height="30" as="geometry" />
+    </mxCell>
+    <mxCell id="fonte1" value="Sites de Montadoras" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="40" y="670" width="80" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="fonte2" value="Portais e Notícias" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="135" y="670" width="80" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="fonte3" value="Órgãos e Bases Públicas" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="225" y="670" width="75" height="50" as="geometry" />
+    </mxCell>
+
+    <mxCell id="fluxo_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;arcSize=5;" vertex="1" parent="1">
+      <mxGeometry x="340" y="620" width="680" height="170" as="geometry" />
+    </mxCell>
+    <mxCell id="fluxo_title" value="FLUXO DE COMUNICAÇÃO" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="345" y="625" width="670" height="25" as="geometry" />
+    </mxCell>
+    <mxCell id="fluxo1" value="Usuário interage com o sistema" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="350" y="660" width="130" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="fluxo2" value="Frontend (React) consome a API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="500" y="660" width="130" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="fluxo3" value="Backend processa a requisição" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="650" y="660" width="130" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="fluxo4" value="Dados persistidos no MySQL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="800" y="660" width="130" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="fluxo_retorno" value="Resposta da API (JSON)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="350" y="730" width="580" height="20" as="geometry" />
+    </mxCell>
+
+    <mxCell id="tech_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8f8f8;strokeColor=#666666;arcSize=5;" vertex="1" parent="1">
+      <mxGeometry x="1040" y="620" width="390" height="170" as="geometry" />
+    </mxCell>
+    <mxCell id="tech_title" value="TECNOLOGIAS UTILIZADAS" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="1045" y="625" width="380" height="25" as="geometry" />
+    </mxCell>
+    <mxCell id="tech_java" value="Java 25" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="1050" y="660" width="110" height="35" as="geometry" />
+    </mxCell>
+    <mxCell id="tech_springboot" value="Spring Boot" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="1175" y="660" width="110" height="35" as="geometry" />
+    </mxCell>
+    <mxCell id="tech_springmvc" value="Spring Web MVC" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="1300" y="660" width="120" height="35" as="geometry" />
+    </mxCell>
+    <mxCell id="tech_datajpa" value="Spring Data JPA" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="1050" y="710" width="110" height="35" as="geometry" />
+    </mxCell>
+    <mxCell id="tech_mysql" value="MySQL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="1175" y="710" width="110" height="35" as="geometry" />
+    </mxCell>
+    <mxCell id="tech_flyway" value="Flyway" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="1300" y="710" width="120" height="35" as="geometry" />
+    </mxCell>
+    <mxCell id="tech_beanval" value="Bean Validation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="1050" y="758" width="110" height="25" as="geometry" />
+    </mxCell>
+    <mxCell id="tech_lombok" value="Lombok" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="1175" y="758" width="110" height="25" as="geometry" />
+    </mxCell>
+    <mxCell id="tech_react" value="React" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="1300" y="758" width="120" height="25" as="geometry" />
+    </mxCell>
+
+    <mxCell id="legenda_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;arcSize=3;" vertex="1" parent="1">
+      <mxGeometry x="30" y="820" width="1400" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="leg_title" value="LEGENDA" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="40" y="835" width="80" height="20" as="geometry" />
+    </mxCell>
+    <mxCell id="leg1" value="Camada de Apresentação" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="130" y="832" width="160" height="25" as="geometry" />
+    </mxCell>
+    <mxCell id="leg2" value="Camada de Aplicação" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="305" y="832" width="160" height="25" as="geometry" />
+    </mxCell>
+    <mxCell id="leg3" value="Camada de Dados" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="480" y="832" width="160" height="25" as="geometry" />
+    </mxCell>
+    <mxCell id="leg4" value="Fontes/Processos Externos" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="655" y="832" width="175" height="25" as="geometry" />
+    </mxCell>
+    <mxCell id="leg5" value="→ Fluxo de Requisição (Ida e Volta)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="845" y="832" width="220" height="25" as="geometry" />
+    </mxCell>
+    <mxCell id="leg6" value="- - → Fluxo de Coleta de Dados" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+      <mxGeometry x="1075" y="832" width="200" height="25" as="geometry" />
+    </mxCell>
+
+    <mxCell id="arrow_user_fe" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="usuario_person" target="frontend_box">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <mxCell id="arrow_fe_be" value="HTTP/HTTPS&#xa;JSON (REST)" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="frontend_box" target="backend_box">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <mxCell id="arrow_controller_service" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="controller_box" target="service_box">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="arrow_service_repo" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="service_box" target="repository_box">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <mxCell id="arrow_be_db" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="backend_box" target="db_box">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <mxCell id="arrow_scraping_fe" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;strokeColor=#d6b656;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="scraping_box" target="frontend_box">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <mxCell id="arrow_fontes_scraping" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;dashed=1;strokeColor=#d6b656;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="fontes_box" target="scraping_box">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <mxCell id="arrow_fluxo1_2" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="fluxo1" target="fluxo2">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="arrow_fluxo2_3" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="fluxo2" target="fluxo3">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="arrow_fluxo3_4" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="fluxo3" target="fluxo4">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+  </root>
+</mxGraphModel>

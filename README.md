@@ -4,6 +4,14 @@
 
 Este repositório contém a implementação de uma API RESTful para gerenciamento de veículos, suas especificações técnicas e usuários, seguindo as melhores práticas de desenvolvimento em Java com Spring Boot.
 
+## 🧑 Integrantes:
+
+* Alice Santos Bulhões: RM554499
+* Eduardo Oliveira Cardoso Madid: RM556349
+* Nicolas Haubricht Hainfellner: RM556259
+* Lucas Henzo Ide Yuki: RM554865
+* Guilherme da Cunha Melo: RM555310
+
 ## Indice
 
 - [🏗️ 1. Desenho de Arquitetura e Componentes](#️-1-desenho-de-arquitetura-e-componentes)

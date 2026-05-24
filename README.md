@@ -269,4 +269,4 @@ Fizemos um vídeo tutorial de como rodar a API com a segurança aplicada, para i
 
 - [Documentação Swagger](http://localhost:8443/swagger-ui/index.html)
 - [Repositório do Projeto](https://github.com/L-A-N-E/API-SpecRecon)
-- [Política de Segurança Detalhada](SECURITY.md)
+- [Política de Segurança Detalhada]([SECURITY.md](https://github.com/L-A-N-E/API-SpecRecon/blob/main/API/SECURITY.md))

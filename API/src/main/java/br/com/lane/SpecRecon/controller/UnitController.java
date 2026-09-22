@@ -16,6 +16,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -40,10 +42,7 @@ public class UnitController {
     }
 
     @Operation(summary = "Lista todas as unidades", description = "Retorna uma lista de todas as unidades de medida cadastradas.")
-    @ApiResponse(responseCode = "200", description = "Lista de unidades retornada com sucesso",
-            content = @Content(mediaType = "application/json",
-                    array = @ArraySchema(schema = @Schema(implementation = UnitsResponseDTO.class)),
-                    examples = @ExampleObject(value = "[{\"id\": 1, \"name\": \"Kilogram\", \"symbol\": \"kg\"}, {\"id\": 2, \"name\": \"Liter\", \"symbol\": \"L\"}]")))
+    @ApiResponse(responseCode = "200", description = "Lista de unidades retornada com sucesso", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UnitsResponseDTO.class)), examples = @ExampleObject(value = "[{\"id\": 1, \"name\": \"Kilogram\", \"symbol\": \"kg\"}, {\"id\": 2, \"name\": \"Liter\", \"symbol\": \"L\"}]")))
     @GetMapping
     public List<UnitsResponseDTO> findAll() {
         return service.findAll().stream()
@@ -52,62 +51,37 @@ public class UnitController {
     }
 
     @Operation(summary = "Busca uma unidade por ID", description = "Retorna uma unidade de medida específica pelo seu ID.")
-    @ApiResponse(responseCode = "200", description = "Unidade encontrada com sucesso",
-            content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = UnitsResponseDTO.class),
-                    examples = @ExampleObject(value = "{\"id\": 1, \"name\": \"Kilogram\", \"symbol\": \"kg\"}")))
-    @ApiResponse(responseCode = "404", description = "Unidade não encontrada",
-            content = @Content(mediaType = "application/json",
-                    examples = @ExampleObject(value = "{\"status\": 404, \"message\": \"Unidade não encontrada\"}")))
+    @ApiResponse(responseCode = "200", description = "Unidade encontrada com sucesso", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnitsResponseDTO.class), examples = @ExampleObject(value = "{\"id\": 1, \"name\": \"Kilogram\", \"symbol\": \"kg\"}")))
+    @ApiResponse(responseCode = "404", description = "Unidade não encontrada", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"status\": 404, \"message\": \"Unidade não encontrada\"}")))
     @GetMapping("/{id}")
     public UnitsResponseDTO findById(@PathVariable Long id) {
         return UnitsResponseDTO.fromModel(service.findById(id));
     }
 
     @Operation(summary = "Cria uma nova unidade", description = "Adiciona uma nova unidade de medida ao sistema.")
-    @ApiResponse(responseCode = "201", description = "Unidade criada com sucesso",
-            content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = UnitsResponseDTO.class),
-                    examples = @ExampleObject(value = "{\"id\": 3, \"name\": \"Meter\", \"symbol\": \"m\"}")))
-    @ApiResponse(responseCode = "400", description = "Requisição inválida",
-            content = @Content(mediaType = "application/json",
-                    examples = @ExampleObject(value = "{\"status\": 400, \"message\": \"Nome ou símbolo da unidade inválido\"}")))
+    @ApiResponse(responseCode = "201", description = "Unidade criada com sucesso", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnitsResponseDTO.class), examples = @ExampleObject(value = "{\"id\": 3, \"name\": \"Meter\", \"symbol\": \"m\"}")))
+    @ApiResponse(responseCode = "400", description = "Requisição inválida", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"status\": 400, \"message\": \"Nome ou símbolo da unidade inválido\"}")))
     @XSignatureHeader
     @PostMapping
     @Transactional
-    public UnitsResponseDTO create(
-            @RequestBody(description = "Dados da unidade a ser criada", required = true,
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = UnitsRequestDTO.class),
-                            examples = @ExampleObject(value = "{\"name\": \"Meter\", \"symbol\": \"m\"}")))
+    public ResponseEntity<UnitsResponseDTO> create(
+            @RequestBody(description = "Dados da unidade a ser criada", required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnitsRequestDTO.class), examples = @ExampleObject(value = "{\"name\": \"Meter\", \"symbol\": \"m\"}")))
             @Valid @org.springframework.web.bind.annotation.RequestBody UnitsRequestDTO unit, HttpServletRequest request) {
         UnitModel model = unit.toModel();
         UnitsResponseDTO created = UnitsResponseDTO.fromModel(service.create(model));
         auditService.logCreate("Unit", created.id(), currentUser(), "Unidade criada", clientIp(request));
-        return created;
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @Operation(summary = "Atualiza uma unidade existente", description = "Atualiza os dados de uma unidade de medida pelo seu ID.")
-    @ApiResponse(responseCode = "200", description = "Unidade atualizada com sucesso",
-            content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = UnitsResponseDTO.class),
-                    examples = @ExampleObject(value = "{\"id\": 1, \"name\": \"Gram\", \"symbol\": \"g\"}")))
-    @ApiResponse(responseCode = "404", description = "Unidade não encontrada",
-            content = @Content(mediaType = "application/json",
-                    examples = @ExampleObject(value = "{\"status\": 404, \"message\": \"Unidade não encontrada\"}")))
-    @ApiResponse(responseCode = "400", description = "Requisição inválida",
-            content = @Content(mediaType = "application/json",
-                    examples = @ExampleObject(value = "{\"status\": 400, \"message\": \"Nome ou símbolo da unidade inválido\"}")))
+    @ApiResponse(responseCode = "200", description = "Unidade atualizada com sucesso", content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnitsResponseDTO.class), examples = @ExampleObject(value = "{\"id\": 1, \"name\": \"Gram\", \"symbol\": \"g\"}")))
+    @ApiResponse(responseCode = "404", description = "Unidade não encontrada", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"status\": 404, \"message\": \"Unidade não encontrada\"}")))
+    @ApiResponse(responseCode = "400", description = "Requisição inválida", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"status\": 400, \"message\": \"Nome ou símbolo da unidade inválido\"}")))
     @XSignatureHeader
     @PutMapping("/{id}")
     @Transactional
     public UnitsResponseDTO update(@PathVariable Long id,
-                                   @RequestBody(description = "Novos dados da unidade", required = true,
-                                           content = @Content(
-                                                   mediaType = "application/json",
-                                                   schema = @Schema(implementation = UnitsRequestDTO.class),
-                                                   examples = @ExampleObject(value = "{\"name\": \"Gram\", \"symbol\": \"g\"}")))
+                                   @RequestBody(description = "Novos dados da unidade", required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = UnitsRequestDTO.class), examples = @ExampleObject(value = "{\"name\": \"Gram\", \"symbol\": \"g\"}")))
                                    @Valid @org.springframework.web.bind.annotation.RequestBody UnitsRequestDTO unit, HttpServletRequest request) {
         UnitModel model = unit.toModel();
         UnitsResponseDTO updated = UnitsResponseDTO.fromModel(service.update(id, model));
@@ -117,15 +91,14 @@ public class UnitController {
 
     @Operation(summary = "Deleta uma unidade", description = "Remove uma unidade de medida do sistema pelo seu ID.")
     @ApiResponse(responseCode = "204", description = "Unidade deletada com sucesso (No Content)")
-    @ApiResponse(responseCode = "404", description = "Unidade não encontrada",
-            content = @Content(mediaType = "application/json",
-                    examples = @ExampleObject(value = "{\"status\": 404, \"message\": \"Unidade não encontrada\"}")))
+    @ApiResponse(responseCode = "404", description = "Unidade não encontrada", content = @Content(mediaType = "application/json", examples = @ExampleObject(value = "{\"status\": 404, \"message\": \"Unidade não encontrada\"}")))
     @XSignatureHeader
     @DeleteMapping("/{id}")
     @Transactional
-    public void delete(@PathVariable Long id, HttpServletRequest request) {
+    public ResponseEntity<Void> delete(@PathVariable Long id, HttpServletRequest request) {
         service.delete(id);
         auditService.logDelete("Unit", id, currentUser(), "Unidade removida", clientIp(request));
+        return ResponseEntity.noContent().build();
     }
 
     private String clientIp(HttpServletRequest request) {

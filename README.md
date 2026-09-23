@@ -338,67 +338,103 @@ O versionamento permite que o banco evolua de forma consistente entre os ambient
 
 Existem duas formas principais de executar a aplicação:
 
-1. **Execução local utilizando HTTP**
-2. **Execução através do Docker utilizando HTTPS**
+1. **Execução local utilizando HTTP** (mais simples para desenvolvimento/testes)
+2. **Execução através do Docker utilizando HTTPS** (mais próximo de produção)
+
+## Como o Spring Boot decide a configuração (leia antes de rodar)
+
+Antes de seguir os passos, entenda essas três peças - elas explicam praticamente todo problema de configuração que aparece ao rodar o projeto:
+
+**1. `application.properties` sempre é carregado primeiro (base).**
+Ele define, por padrão, HTTPS na porta `8443` (pensado para o cenário Docker/produção):
+```properties
+server.ssl.enabled=true
+server.port=8443
+```
+
+**2. Um "profile" ativo carrega um arquivo adicional que sobrescreve a base.**
+O projeto tem o profile `local` (`application-local.properties`), que desliga o SSL e usa a porta `8080`:
+```properties
+server.ssl.enabled=false
+server.port=8080
+```
+Sem ativar esse profile, a aplicação sempre volta ao padrão HTTPS/8443 - **é por isso que abrir `http://localhost:8443` no navegador dá o erro "Bad Request: this combination of host and port requires TLS"**: a porta 8443 só existe em modo HTTPS quando o profile `local` não está ativo.
+
+Para ativar o profile `local`, existem duas formas equivalentes (use uma, não as duas):
+```powershell
+# Opção A - flag na hora de rodar (vale só para essa execução)
+.\mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=local
+
+# Opção B - variável de ambiente (vale para toda a sessão do terminal)
+$env:SPRING_PROFILES_ACTIVE="local"
+.\mvnw.cmd spring-boot:run
+```
+
+**3. Variáveis de ambiente sempre "ganham" dos valores dentro dos arquivos `.properties`.**
+Sempre que você vir algo como `${DB_USER:root}` num `.properties`, isso significa "use a variável de ambiente `DB_USER`; se ela não existir, use `root` como padrão". Ou seja:
+- Se você **não** definiu a variável, vale o valor depois dos dois-pontos (o padrão).
+- Se você **definiu** a variável em algum momento no PowerShell, ela **continua valendo em qualquer comando seguinte na mesma janela**, mesmo que o comando seja de um contexto diferente (teste, run, outro profile). Isso é a causa mais comum de confusão: uma variável `DB_USER`/`DB_PASS`/`DB_URL` definida há vários comandos atrás "vaza" para a execução atual e faz a aplicação tentar logar no banco com credenciais que não são as que você esperava agora.
+
+**Resumindo em uma frase:** o resultado final de qualquer execução = `application.properties` + arquivo do profile ativo (se houver) + variáveis de ambiente definidas na sessão do terminal (que sempre têm a palavra final). Se algo não bate com o esperado, confira essas três camadas nessa ordem.
 
 ## Execução Local - HTTP
 
 ### Pré-requisitos
 
-- Java 17+
-- Maven
-- MySQL configurado
+- Java 17+ (o projeto usa Java 21)
+- Maven (ou o wrapper `mvnw`/`mvnw.cmd` já incluso no projeto, que não exige instalação)
+- MySQL acessível em `localhost:3306`, com um usuário que tenha permissão de criar/alterar tabelas no banco `specrecon` (esse é o schema usado no profile `local` - os testes automatizados usam um banco separado, `specrecon_test`, veja a seção de testes)
 
 ### 1. Instalar dependências
-
-Execute:
 
 ```bash
 mvn clean install
 ```
+ou, sem o Maven instalado:
+```powershell
+.\mvnw.cmd clean install
+```
 
-### 2. Configurar variáveis de ambiente
+### 2. Configurar as credenciais do banco
 
-Configure o arquivo `.env` com as chaves necessárias, incluindo:
+O jeito mais simples para desenvolvimento local é definir as variáveis de ambiente na sessão do terminal antes de rodar (assim você não precisa editar nenhum arquivo, e nada fica salvo permanentemente):
 
+```powershell
+$env:DB_USER="root"          # ou o usuário que você criou no MySQL
+$env:DB_PASS="sua_senha_real"
+```
+
+Alternativamente, você pode configurar essas chaves em um arquivo `.env` na raiz de `API/` (o projeto já carrega esse arquivo automaticamente via `spring.config.import` no `application.properties`):
 ```text
-JWT_SECRET
-DB_URL
-DB_USER
-DB_PASS
+JWT_SECRET=...
+DB_URL=jdbc:mysql://localhost:3306/specrecon?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+DB_USER=...
+DB_PASS=...
+```
+> ⚠️ O `.env` tem prioridade menor que variáveis de ambiente já definidas na sessão - se os dois estiverem definidos ao mesmo tempo com valores diferentes, vale o que está no terminal (ver seção anterior).
+
+Certifique-se de que esse usuário existe no MySQL e tem privilégios sobre o banco. Exemplo, via SQL Editor do Workbench:
+```sql
+CREATE USER IF NOT EXISTS 'specrecon'@'localhost' IDENTIFIED BY 'specreconpass';
+GRANT ALL PRIVILEGES ON specrecon.* TO 'specrecon'@'localhost';
+FLUSH PRIVILEGES;
 ```
 
-### 3. Ativar o profile local
+### 3. Ativar o profile `local` e executar
 
-No ambiente de execução, selecione o profile:
+```powershell
+.\mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=local
+```
 
+Se tudo estiver certo, o log de inicialização vai mostrar:
 ```text
-local
+The following 1 profile is active: "local"
+...
+Tomcat initialized with port 8080 (http)
 ```
+e a aplicação vai terminar de subir sem lançar exceções depois disso. Se o processo encerrar sozinho com um erro logo após "HikariPool-1 - Starting..." (mesmo que o Maven mostre "BUILD SUCCESS" no final - isso só indica que o processo Java terminou, não que a aplicação subiu), o motivo real está mais acima no log, geralmente em uma linha `Caused by:` - veja "Problemas comuns" abaixo.
 
-Isso fará com que seja utilizado o arquivo:
-
-```text
-application-local.properties
-```
-
-### 4. Executar a aplicação
-
-Pelo IntelliJ, execute:
-
-```text
-SpecReconApplication.java
-```
-
-Ou utilize o Maven:
-
-```bash
-mvn spring-boot:run
-```
-
-### 5. Acessar o Swagger
-
-Após iniciar a aplicação:
+### 4. Acessar o Swagger
 
 ```text
 http://localhost:8080/swagger-ui/index.html
@@ -451,6 +487,16 @@ docker compose up --build
 ```text
 https://localhost:8443/swagger-ui/index.html
 ```
+
+## Problemas comuns
+
+| Sintoma | Causa provável | Solução |
+|---|---|---|
+| `Bad Request: this combination of host and port requires TLS` no navegador | Você acessou `http://localhost:8443` sem o profile `local` ativo (a 8443 só existe em HTTPS) | Acesse com `https://` na porta 8443, **ou** ative o profile `local` e use `http://localhost:8080` |
+| `Access denied for user 'X'@'localhost' (using password: YES)` no log, app encerra sozinha | O usuário/senha que a aplicação está usando (via `DB_USER`/`DB_PASS`, padrão ou variável de ambiente) não bate com o usuário real no MySQL | Confirme com `$env:DB_USER` / `$env:DB_PASS` o que está definido na sessão atual, e alinhe com um usuário que exista de fato no MySQL (crie um se necessário, com o SQL acima) |
+| `UnknownHostException` ou `Communications link failure` ao conectar no banco | `DB_URL` está apontando para um host de container (ex.: `mysql`, `db_test`) em vez de `localhost`, geralmente por ter sido definida numa sessão anterior com Docker | `echo $env:DB_URL` para confirmar, e redefina para `localhost` antes de rodar localmente |
+| Log mostra `BUILD SUCCESS` mas a API não responde | O processo Java terminou porque o Spring falhou ao subir o contexto (erro de banco, bean, etc.) - o Maven só reporta sucesso do próprio build, não da aplicação em si | Role o log para cima até achar a primeira linha `Caused by:` - ela mostra o erro real |
+| Credenciais de uma execução "vazam" para a próxima | Variáveis de ambiente (`DB_USER`, `DB_PASS`, `DB_URL`, `SPRING_PROFILES_ACTIVE`) setadas com `$env:` continuam valendo em todos os comandos seguintes na mesma janela do PowerShell | Abra um terminal novo para "resetar", ou redefina explicitamente as variáveis antes de cada execução diferente |
 
 # 🧪 Como Testar
 
@@ -672,6 +718,38 @@ specrecon_test
 
 separado do banco de desenvolvimento.
 
+### Configuração de conexão (variáveis de ambiente)
+
+O `application-test.properties` lê a conexão a partir de três variáveis de ambiente, com valores padrão caso elas não estejam definidas:
+
+```properties
+spring.datasource.url=${DB_URL:jdbc:mysql://localhost:3306/specrecon_test?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+spring.datasource.username=${DB_USER:root}
+spring.datasource.password=${DB_PASS:specreconpass}
+```
+
+Ou seja, **por padrão** os testes tentam conectar em `localhost:3306` com usuário `root` e senha `specreconpass`. Se o seu MySQL local usa outro usuário/senha, defina as variáveis antes de rodar os testes:
+
+**PowerShell (Windows):**
+```powershell
+$env:DB_URL="jdbc:mysql://localhost:3306/specrecon_test?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+$env:DB_USER="seu_usuario"
+$env:DB_PASS="sua_senha"
+```
+
+**Linux/macOS (bash):**
+```bash
+export DB_URL="jdbc:mysql://localhost:3306/specrecon_test?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+export DB_USER=seu_usuario
+export DB_PASS=sua_senha
+```
+
+O usuário informado precisa ter permissão para criar o schema (`createDatabaseIfNotExist=true` só funciona se o usuário tiver privilégio de `CREATE`) e para criar/alterar tabelas, já que o Flyway executa as migrações automaticamente no boot da aplicação de teste. No MySQL Workbench, isso é feito em **Users and Privileges → Schema Privileges → Add Entry**, concedendo pelo menos `CREATE`, `ALTER`, `DROP`, `SELECT`, `INSERT`, `UPDATE`, `DELETE`, `INDEX`, `REFERENCES`.
+
+> ⚠️ **Atenção ao alternar entre Docker e MySQL local:** o `docker-compose.test.yml` (Opção 1) define suas próprias variáveis `DB_URL`/`DB_USER`/`DB_PASS` apontando para o container (host `db_test`), mas isso é feito **dentro** do container - não afeta seu terminal. O problema comum é o contrário: se essas variáveis já estiverem definidas manualmente no seu sistema (Windows/Linux) apontando para um host de container (`mysql`, `db_test` etc.) ou credenciais antigas, elas **sobrescrevem** os valores padrão do `application-test.properties` e os testes falham com `UnknownHostException` ou `Communications link failure` ao tentar rodar contra o MySQL local. Se isso acontecer:
+> 1. Confira o que está definido: `echo $env:DB_URL` (PowerShell) ou `echo $DB_URL` (bash).
+> 2. Se apontar para um host de container, redefina a variável para `localhost` (comandos acima) ou remova-a das variáveis de ambiente permanentes do sistema.
+
 ### Executar
 
 Dentro da pasta `API/`:
@@ -679,6 +757,15 @@ Dentro da pasta `API/`:
 ```bash
 cd API
 mvn test
+```
+
+Ou, sem o Maven instalado, usando o wrapper do projeto:
+
+```powershell
+.\mvnw.cmd clean test
+```
+```bash
+./mvnw clean test
 ```
 
 ## Classes e Cenários Cobertos
@@ -738,4 +825,3 @@ Foi desenvolvido um vídeo tutorial demonstrando como executar a API com os meca
 Para informações detalhadas sobre os mecanismos de segurança implementados no projeto, consulte:
 
 [**SECURITY.md - Política de Segurança**](https://github.com/L-A-N-E/API-SpecRecon/blob/main/API/SECURITY.md)
-

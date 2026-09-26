@@ -1,0 +1,13 @@
+# Prometheus - coleta (scrape) das métricas da API SpecRecon
+global:
+  scrape_interval: 15s       # de quanto em quanto tempo busca as métricas
+  evaluation_interval: 15s   # de quanto em quanto tempo avalia as regras de alerta
+
+rule_files:
+  - /etc/prometheus/alerts.yml
+
+scrape_configs:
+  - job_name: specrecon-api
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ["api:9090"]   # porta de gerenciamento, só na rede interna do Docker

@@ -2,6 +2,9 @@ package br.com.lane.SpecRecon.service;
 
 import br.com.lane.SpecRecon.model.AuditLogModel;
 import br.com.lane.SpecRecon.repository.AuditLogRepository;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +22,15 @@ public class AuditService {
     private AuditLogRepository auditLogRepository;
 
     /**
+     * Observabilidade (Sprint 3 - Etapa 3): cada evento de auditoria também vira
+     * métrica no Prometheus -> specrecon_security_events_total{action, status}.
+     * É sobre essa métrica que as regras de alerta (brute force, escalada de
+     * privilégio, honeypot...) são definidas.
+     */
+    @Autowired
+    private ObjectProvider<MeterRegistry> meterRegistry;
+
+    /**
      * Registra ação de auditoria.
      */
     public void logAction(String action, String entityType, Long entityId, 
@@ -33,6 +45,13 @@ public class AuditService {
         auditLog.setStatus(status);
         
         auditLogRepository.save(auditLog);
+
+        meterRegistry.ifAvailable(registry -> Counter.builder("specrecon.security.events")
+                .description("Eventos de segurança registrados na trilha de auditoria")
+                .tag("action", action)
+                .tag("status", status)
+                .register(registry)
+                .increment());
     }
 
     /**

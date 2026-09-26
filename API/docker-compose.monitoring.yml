@@ -1,0 +1,53 @@
+# =====================================================================
+# SpecRecon - Stack de monitoramento (Sprint 3 - Etapa 3)
+#
+# Sobe JUNTO com o compose principal (mesma rede):
+#   docker compose -f docker-compose.yml -f docker-compose.monitoring.yml up -d --build
+#
+# Acesso (somente pela própria máquina - 127.0.0.1):
+#   Grafana    -> http://localhost:3000   (usuário admin / senha GRAFANA_ADMIN_PASSWORD do .env)
+#   Prometheus -> http://localhost:9091   (aba Alerts mostra as regras disparando)
+#
+# A API expõe métricas na porta 9090 SOMENTE na rede interna do Docker
+# (não publicada no host). A porta pública 8443 mantém /actuator como honeypot.
+# =====================================================================
+services:
+  prometheus:
+    image: prom/prometheus:v2.55.1          # versão fixada
+    container_name: specrecon-prometheus
+    restart: unless-stopped
+    depends_on:
+      - api
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=15d
+    ports:
+      - "127.0.0.1:9091:9090"
+
+  grafana:
+    image: grafana/grafana:11.3.0            # versão fixada
+    container_name: specrecon-grafana
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?Defina GRAFANA_ADMIN_PASSWORD no .env}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/specrecon-seguranca.json
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "127.0.0.1:3000:3000"
+
+volumes:
+  prometheus_data:
+  grafana_data:

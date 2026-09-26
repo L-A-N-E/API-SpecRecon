@@ -1,0 +1,74 @@
+# =====================================================================
+# SpecRecon - Regras de alerta (Sprint 3 - Etapa 3: gatilhos de alerta)
+#
+# Base: specrecon_security_events_total{action, status} -> gerada pelo AuditService
+#       para CADA evento da trilha de auditoria.
+# Severidades: critical = acionar resposta a incidente (PICERL) imediatamente
+#              warning  = investigar
+# =====================================================================
+groups:
+  - name: specrecon-seguranca
+    rules:
+      - alert: BruteForceLogin
+        expr: sum by (instance) (increase(specrecon_security_events_total{action="FAILED_LOGIN"}[1m])) > 5
+        labels:
+          severity: critical
+        annotations:
+          summary: "Possível brute force: mais de 5 falhas de login em 1 minuto"
+          playbook: "PICERL - Contenção: confirmar bloqueio do rate limit em /auth, identificar IP no audit_log"
+
+      - alert: PrivilegeEscalationAttempt
+        expr: sum(increase(specrecon_security_events_total{action="PRIVILEGE_ESCALATION_ATTEMPT"}[5m])) > 0
+        labels:
+          severity: critical
+        annotations:
+          summary: "Tentativa de auto-registro como ADMIN/ANALYST (OWASP API5)"
+          playbook: "PICERL - Identificação: consultar audit_log por PRIVILEGE_ESCALATION_ATTEMPT e IP de origem"
+
+      - alert: RoleChanged
+        expr: sum(increase(specrecon_security_events_total{action="ROLE_CHANGED"}[5m])) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: "Perfil de usuário alterado - validar se a mudança foi autorizada"
+          playbook: "Confirmar com o ADMIN responsável (performed_by no audit_log)"
+
+      - alert: HoneypotHit
+        expr: sum(increase(specrecon_security_events_total{action="HONEYPOT_HIT"}[5m])) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: "Endpoint honeypot acessado (/.env, /admin, /actuator...) - reconhecimento em andamento"
+          playbook: "PICERL - Identificação: coletar IP e User-Agent do audit_log"
+
+      - alert: AccessDeniedSpike
+        expr: sum(increase(specrecon_security_events_total{action="UNAUTHORIZED"}[5m])) > 10
+        labels:
+          severity: warning
+        annotations:
+          summary: "Mais de 10 acessos negados (403) em 5 minutos - possível enumeração de endpoints"
+
+      - alert: RateLimitAbuse
+        expr: sum(increase(specrecon_security_events_total{action="RATE_LIMIT_EXCEEDED"}[5m])) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: "Cliente estourou o rate limit - possível abuso/DoS"
+
+      - alert: High5xxRate
+        expr: |
+          sum(rate(http_server_requests_seconds_count{status=~"5.."}[5m]))
+            / clamp_min(sum(rate(http_server_requests_seconds_count[5m])), 0.001) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Mais de 5% das requisições com erro 5xx"
+
+      - alert: ApiDown
+        expr: up{job="specrecon-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Prometheus não consegue coletar métricas da API (API fora do ar?)"

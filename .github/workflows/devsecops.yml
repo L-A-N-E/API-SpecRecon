@@ -1,0 +1,145 @@
+# =====================================================================
+# SpecRecon - Pipeline DevSecOps
+# Sprint 3 Cybersecurity - Etapa 1: Pipeline DevSecOps & Analise de Codigo
+#
+# Fluxo:
+#   commit / PR
+#     -> 1. Secret Scanning (TruffleHog)   - historico completo do Git
+#     -> 2. SAST (Semgrep)                 - codigo Java (regras Java + OWASP Top 10)
+#     -> 3. Build + Testes (JUnit)         - so roda se 1 e 2 passarem
+#
+# Cada etapa e um "quality gate": se falhar, as seguintes nao rodam.
+# =====================================================================
+name: DevSecOps Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read            # menor privilegio: o pipeline so le o repo
+
+concurrency:
+  group: devsecops-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  TRUFFLEHOG_VERSION: 3.90.8   # versao fixada (evita supply chain attack via "latest")
+
+jobs:
+  # -------------------------------------------------------------------
+  # 1. SECRET SCANNING - TruffleHog
+  # -------------------------------------------------------------------
+  secret-scan:
+    name: "1. Secret Scanning (TruffleHog)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0        # historico completo: acha segredo ate em commit antigo
+
+      - name: Instalar TruffleHog
+        run: |
+          curl -sSL -o th.tar.gz \
+            "https://github.com/trufflesecurity/trufflehog/releases/download/v${TRUFFLEHOG_VERSION}/trufflehog_${TRUFFLEHOG_VERSION}_linux_amd64.tar.gz"
+          tar -xzf th.tar.gz trufflehog
+          sudo mv trufflehog /usr/local/bin/
+          trufflehog --version
+
+      - name: Relatorio completo (verificados + nao verificados)
+        run: |
+          trufflehog git file://. --no-update \
+            --results=verified,unknown,unverified | tee trufflehog-report.txt
+          trufflehog git file://. --no-update --json \
+            --results=verified,unknown,unverified > trufflehog-report.json || true
+
+      - name: Quality gate (bloqueia segredo VERIFICADO = credencial ativa)
+        run: |
+          trufflehog git file://. --no-update --results=verified --fail
+
+      - name: Salvar relatorios
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trufflehog-report
+          path: trufflehog-report.*
+
+  # -------------------------------------------------------------------
+  # 2. SAST - Semgrep
+  # -------------------------------------------------------------------
+  sast:
+    name: "2. SAST (Semgrep)"
+    runs-on: ubuntu-latest
+    needs: secret-scan
+    container:
+      image: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Relatorio completo
+        run: |
+          semgrep scan --config p/java --config p/owasp-top-ten --metrics=off \
+            --text API/src | tee semgrep-report.txt
+          semgrep scan --config p/java --config p/owasp-top-ten --metrics=off \
+            --json --output semgrep-report.json API/src || true
+
+      - name: Quality gate (bloqueia WARNING e ERROR)
+        run: |
+          semgrep scan --config p/java --config p/owasp-top-ten --metrics=off \
+            --severity WARNING --severity ERROR --error API/src
+
+      - name: Salvar relatorios
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-report
+          path: semgrep-report.*
+
+  # -------------------------------------------------------------------
+  # 3. BUILD + TESTES (inclui cenarios de seguranca: 401/403/400/RBAC)
+  # -------------------------------------------------------------------
+  build-test:
+    name: "3. Build + Testes JUnit"
+    runs-on: ubuntu-latest
+    needs: sast
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: specrecon_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    defaults:
+      run:
+        working-directory: API
+    env:
+      DB_URL: jdbc:mysql://localhost:3306/specrecon_test?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      DB_USER: root
+      DB_PASS: root
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Build + testes
+        run: |
+          chmod +x mvnw
+          ./mvnw -B clean verify
+
+      - name: Salvar resultado dos testes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-reports
+          path: API/target/surefire-reports/

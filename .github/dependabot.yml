@@ -1,0 +1,21 @@
+# SCA continuo - Dependabot abre PR automatico quando sai correcao de CVE
+version: 2
+updates:
+  - package-ecosystem: "maven"
+    directory: "/API"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels: [ "dependencies", "security" ]
+
+  - package-ecosystem: "docker"
+    directory: "/API"
+    schedule:
+      interval: "weekly"
+    labels: [ "dependencies", "security" ]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels: [ "dependencies", "ci" ]

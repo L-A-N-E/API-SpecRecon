@@ -62,7 +62,7 @@ jobs:
 
       - name: Salvar relatorios
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: trufflehog-report
           path: trufflehog-report.*
@@ -93,7 +93,7 @@ jobs:
 
       - name: Salvar relatorios
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: semgrep-report
           path: semgrep-report.*
@@ -139,7 +139,7 @@ jobs:
 
       - name: Salvar resultado dos testes
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: junit-reports
           path: API/target/surefire-reports/

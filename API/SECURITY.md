@@ -1,5 +1,15 @@
 # SECURITY.md — Cybersegurança do SpecRecon
 
+> ### 🔄 Atualização – Sprint 3 (DevSecOps)
+> Este documento descreve os controles da **Sprint 2**. Na Sprint 3 alguns pontos foram **evoluídos** – a versão vigente de cada um está em **[SECURITY-SPRINT3.md](SECURITY-SPRINT3.md)**:
+> - **Criptografia em repouso:** AES-256 (modo ECB) → **AES-256-GCM** com IV sintético e tag de autenticação.
+> - **Rate limit:** além de 100 req/min por IP, agora **10 req/min em `/auth/**`**, e o IP não pode mais ser falsificado via `X-Forwarded-For`.
+> - **JWT:** tipo de token (`access`/`refresh`) validado e API não inicia sem `JWT_SECRET` ≥ 512 bits.
+> - **RBAC:** registro público só cria `USER` (bootstrap do 1º `ADMIN`) e exclusões do catálogo restritas a `ADMIN`/`ANALYST`.
+> - **Logs:** Spring Security em `WARN` (não mais `DEBUG`), auditoria completa de `/users` e novos eventos (`ROLE_CHANGED`, `PRIVILEGE_ESCALATION_ATTEMPT`, `RATE_LIMIT_EXCEEDED`).
+> - **Novos:** pipeline DevSecOps (TruffleHog + Semgrep), métricas e alertas (Prometheus/Grafana) e backup/restore com SHA-256.
+
+
 > Documento que mapeia cada exigência da rubrica de cybersegurança (100 pts)
 > à implementação correspondente neste repositório, com **arquivo + linha**,
 > **descrição do mecanismo** e **evidência de teste**.

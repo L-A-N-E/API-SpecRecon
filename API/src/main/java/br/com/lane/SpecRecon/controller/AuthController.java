@@ -1,6 +1,7 @@
 package br.com.lane.SpecRecon.controller;
 
 import br.com.lane.SpecRecon.dto.Users.UsersRequestDTO;
+import br.com.lane.SpecRecon.model.Role;
 import br.com.lane.SpecRecon.model.UserModel;
 import br.com.lane.SpecRecon.security.JwtTokenProvider;
 import br.com.lane.SpecRecon.service.AuditService;
@@ -21,6 +22,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -142,6 +144,18 @@ public class AuthController {
                                       @org.springframework.web.bind.annotation.RequestBody UsersRequestDTO registerRequest, HttpServletRequest request) {
         String clientIp = getClientIp(request);
 
+        // Anti-escalada de privilégio (OWASP API5 - Broken Function Level Authorization):
+        // o registro público só cria USER. ADMIN/ANALYST exigem um ADMIN autenticado,
+        // exceto no bootstrap (banco vazio), quando o primeiro usuário pode ser ADMIN.
+        Role requestedRole = registerRequest.role();
+        if (requestedRole != Role.USER && userService.hasAnyUser() && !isAuthenticatedAdmin()) {
+            auditService.logAction("PRIVILEGE_ESCALATION_ATTEMPT", "User", 0L, "ANONYMOUS",
+                    "Tentativa de auto-registro com perfil " + requestedRole, clientIp, "UNAUTHORIZED");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ErrorResponse(403,
+                            "Somente um ADMIN autenticado pode criar usuários com perfil " + requestedRole));
+        }
+
         try {
             UserModel user = registerRequest.toModel();
             // Criptografar senha com BCrypt
@@ -150,8 +164,8 @@ public class AuthController {
             UserModel createdUser = userService.create(user);
 
             // Auditoria: novo usuário criado
-            auditService.logCreate("User", createdUser.getId(), "SYSTEM",
-                    "Novo usuário registrado", clientIp);
+            auditService.logCreate("User", createdUser.getId(), currentUserOr("SYSTEM"),
+                    "Novo usuário registrado com perfil " + createdUser.getRole(), clientIp);
 
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(new RegisterResponse(createdUser.getId(), createdUser.getEmail(), createdUser.getRole().name()));
@@ -191,10 +205,17 @@ public class AuthController {
         try {
             String refreshToken = refreshTokenRequest.getRefreshToken();
 
-            // Validar refresh token
+            // Validar refresh token (assinatura + expiração são checadas no parse)
             String username = jwtTokenProvider.extractUsername(refreshToken);
             Long userId = jwtTokenProvider.extractUserId(refreshToken);
-            String role = jwtTokenProvider.extractRole(refreshToken);
+
+            // Somente refresh tokens podem renovar a sessão (access token é recusado)
+            if (!jwtTokenProvider.isRefreshToken(refreshToken)) {
+                auditService.logAction("TOKEN_REFRESH_FAILED", "User", userId, username,
+                        "Token enviado não é refresh token", clientIp, "FAILED");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ErrorResponse(401, "Refresh token inválido"));
+            }
 
             if (jwtTokenProvider.isTokenExpired(refreshToken)) {
                 auditService.logAction("TOKEN_REFRESH_FAILED", "User", userId, username,
@@ -211,16 +232,36 @@ public class AuthController {
                     .authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
                     .build();
 
-            String newToken = jwtTokenProvider.generateToken(userDetails, userId, role);
-            String newRefreshToken = jwtTokenProvider.generateRefreshToken(userDetails, userId);
+            // Role vem do banco (fonte da verdade), não do token: se o perfil mudou,
+            // o novo token já reflete a mudança. (Antes vinha null do refresh token.)
+            String role = user.getRole().name();
+            String newToken = jwtTokenProvider.generateToken(userDetails, user.getId(), role);
+            String newRefreshToken = jwtTokenProvider.generateRefreshToken(userDetails, user.getId());
 
-            return ResponseEntity.ok(new LoginResponse(newToken, newRefreshToken, userId, role));
+            auditService.logAction("TOKEN_REFRESH", "User", user.getId(), username,
+                    "Sessão renovada via refresh token", clientIp, "SUCCESS");
+
+            return ResponseEntity.ok(new LoginResponse(newToken, newRefreshToken, user.getId(), role));
         } catch (Exception e) {
             auditService.logAction("TOKEN_REFRESH_FAILED", "User", 0L, "SYSTEM",
                     "Refresh token inválido", clientIp, "FAILED");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new ErrorResponse(401, "Refresh token inválido"));
         }
+    }
+
+    private boolean isAuthenticatedAdmin() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth != null && auth.isAuthenticated() && auth.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+    }
+
+    private String currentUserOr(String fallback) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getName())) {
+            return fallback;
+        }
+        return auth.getName();
     }
 
     private String getClientIp(HttpServletRequest request) {

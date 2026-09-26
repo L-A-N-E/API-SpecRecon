@@ -26,6 +26,14 @@ public class UserService {
         return repository.findAll();
     }
 
+    /**
+     * Usado no bootstrap do primeiro ADMIN: só é permitido registrar ADMIN
+     * publicamente enquanto o banco não tem nenhum usuário.
+     */
+    public boolean hasAnyUser() {
+        return repository.count() > 0;
+    }
+
     public UserModel findById(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Usuário não encontrado"));

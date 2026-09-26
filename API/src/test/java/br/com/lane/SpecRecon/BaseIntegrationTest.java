@@ -1,5 +1,8 @@
 package br.com.lane.SpecRecon;
 
+import br.com.lane.SpecRecon.model.Role;
+import br.com.lane.SpecRecon.model.UserModel;
+import br.com.lane.SpecRecon.repository.UserRepository;
 import br.com.lane.SpecRecon.security.PayloadSignatureManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -30,6 +33,9 @@ public abstract class BaseIntegrationTest {
 
     @Autowired
     protected PayloadSignatureManager signatureManager;
+
+    @Autowired
+    protected UserRepository userRepository;
 
     protected static final String DEFAULT_PASSWORD = "@Securepassword123";
 
@@ -73,10 +79,19 @@ public abstract class BaseIntegrationTest {
      * pronto para ser usado no header Authorization dos testes.
      */
     protected String registerAndLogin(String email, String role) throws Exception {
+        // O registro público só cria USER (anti-escalada de privilégio).
+        // Para ADMIN/ANALYST, registra como USER e promove direto no banco,
+        // simulando a ação de um administrador.
         mockMvc.perform(post("/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(registerJson(email, DEFAULT_PASSWORD, role)))
+                        .content(registerJson(email, DEFAULT_PASSWORD, "USER")))
                 .andExpect(status().isCreated());
+
+        if (!"USER".equals(role)) {
+            UserModel user = userRepository.findByEmail(email.trim().toLowerCase()).orElseThrow();
+            user.setRole(Role.valueOf(role));
+            userRepository.save(user);
+        }
 
         MvcResult loginResult = mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)

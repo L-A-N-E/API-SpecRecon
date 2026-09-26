@@ -39,7 +39,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String jwt = getJwtFromRequest(request);
 
-            if (jwt != null && !jwt.isEmpty()) {
+            if (jwt != null && !jwt.isEmpty() && !jwtTokenProvider.isAccessToken(jwt)) {
+                // Refresh token (24h) NÃO pode ser usado como access token.
+                // Não autentica: a requisição segue anônima e cai em 401.
+                logger.warn("Token rejeitado: somente access tokens são aceitos no header Authorization");
+            } else if (jwt != null && !jwt.isEmpty()) {
                 // Extrair username do token
                 String username = jwtTokenProvider.extractUsername(jwt);
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);

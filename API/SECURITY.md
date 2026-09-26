@@ -288,21 +288,40 @@ O job lê a tabela diariamente, calcula o cutoff e remove registros antigos via 
 
 ## 🟦 Eixo 5 — Monitoramento, Logs e Auditoria (15 pts)
 
-### 5.1 Logs estruturados e seguros
+### 5.1 Logs estruturados em JSON (ECS — Elastic Common Schema)
 
 **Configuração:** `application.properties`
 
 ```properties
 logging.level.root=INFO
 logging.level.br.com.lane.SpecRecon=DEBUG
-logging.pattern.console=%d{yyyy-MM-dd HH:mm:ss} - %logger{36} - %msg%n
+logging.level.org.springframework.security=DEBUG
+logging.structured.format.console=ecs
+logging.structured.format.file=ecs
 logging.file.name=logs/specrecon.log
 ```
 
-- Padrão consistente (timestamp + logger + mensagem)
+Cada evento é emitido como **uma linha JSON** no padrão Elastic Common Schema (`ecs.version=8.11`), pronto para ingestão direta em Splunk, ELK, Datadog, Grafana Loki ou qualquer SIEM compatível.
+
+**Exemplo real de saída:**
+```json
+{"@timestamp":"2026-05-24T19:16:37.473Z","log":{"level":"INFO","logger":"org.springframework.boot.tomcat.TomcatWebServer"},"process":{"pid":1,"thread":{"name":"main"}},"service":{"name":"SpecRecon","version":"0.0.1-SNAPSHOT"},"message":"Tomcat started on port 8443 (https)","ecs":{"version":"8.11"}}
+```
+
+**Campos garantidos por evento:**
+- `@timestamp` — ISO 8601 em UTC
+- `log.level` — INFO, DEBUG, WARN, ERROR
+- `log.logger` — classe Java que emitiu
+- `process.pid` / `process.thread.name` — identificação do processo/thread
+- `service.name` — `SpecRecon` (auto-populado de `spring.application.name`)
+- `service.version` — `0.0.1-SNAPSHOT`
+- `message` — conteúdo legível do evento
+- `ecs.version` — versão do schema
+
+**Garantias de segurança nos logs:**
 - **Sem dados sensíveis** — nunca logamos senha, JWT completo ou payload de request
-- Rastreabilidade por timestamp + classe que emitiu o log
-- Arquivo de log persistido em `logs/specrecon.log`
+- Tokens `Authorization` são mascarados para `[PRESENT]` em logs do honeypot
+- Arquivo de log persistido em `logs/specrecon.log` para auditoria offline
 
 ### 5.2 Monitoramento de eventos suspeitos
 

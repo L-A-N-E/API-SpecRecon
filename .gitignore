@@ -1,0 +1,21 @@
+# Logs NUNCA vao para o repositorio (achado do TruffleHog - Sprint 3):
+# continham connection strings JDBC, caminhos locais e stack traces.
+logs/
+*.log
+*.log.*.gz
+
+# Segredos e certificados
+.env
+*.p12
+*.jks
+*.pem
+*.key
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Arquivos locais de entregas
+Relatorio_*.pdf
+generate_report.py

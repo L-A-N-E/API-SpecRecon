@@ -2,7 +2,10 @@ package br.com.lane.SpecRecon.controller;
 
 import br.com.lane.SpecRecon.dto.Users.UsersRequestDTO;
 import br.com.lane.SpecRecon.dto.Users.UsersResponseDTO;
+import br.com.lane.SpecRecon.model.Role;
 import br.com.lane.SpecRecon.model.UserModel;
+import br.com.lane.SpecRecon.security.ClientIpResolver;
+import br.com.lane.SpecRecon.service.AuditService;
 import br.com.lane.SpecRecon.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -12,11 +15,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import br.com.lane.SpecRecon.config.XSignatureHeader;
 import java.util.List;
@@ -37,9 +44,13 @@ import java.util.List;
 public class UserController {
 
     private final UserService service;
+    private final AuditService auditService;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserController(UserService service) {
+    public UserController(UserService service, AuditService auditService, PasswordEncoder passwordEncoder) {
         this.service = service;
+        this.auditService = auditService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /**
@@ -93,9 +104,15 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UsersResponseDTO> create(
             @RequestBody(description = "Dados para criação de um novo usuário", required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsersRequestDTO.class), examples = @ExampleObject(value = "{\"email\": \"newuser@example.com\", \"password\": \"securepassword\", \"role\": \"USER\"}")))
-            @Valid @org.springframework.web.bind.annotation.RequestBody UsersRequestDTO user) {
+            @Valid @org.springframework.web.bind.annotation.RequestBody UsersRequestDTO user,
+            HttpServletRequest request) {
         UserModel model = user.toModel();
+        // Correção Sprint 3: antes a senha era gravada em TEXTO PURO por este endpoint
+        model.setPassword(passwordEncoder.encode(model.getPassword()));
         UsersResponseDTO created = UsersResponseDTO.fromModel(service.create(model));
+
+        auditService.logCreate("User", created.id(), currentUser(),
+                "Usuário criado por administrador com perfil " + model.getRole(), clientIp(request));
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
@@ -118,9 +135,23 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     public UsersResponseDTO update(@PathVariable Long id,
                                    @RequestBody(description = "Dados atualizados do usuário", required = true, content = @Content(mediaType = "application/json", schema = @Schema(implementation = UsersRequestDTO.class), examples = @ExampleObject(value = "{\"email\": \"admin_updated@example.com\", \"password\": \"newsecurepassword\", \"role\": \"ADMIN\"}")))
-                                   @Valid @org.springframework.web.bind.annotation.RequestBody UsersRequestDTO user) {
+                                   @Valid @org.springframework.web.bind.annotation.RequestBody UsersRequestDTO user,
+                                   HttpServletRequest request) {
+        Role previousRole = service.findById(id).getRole();
+
         UserModel model = user.toModel();
-        return UsersResponseDTO.fromModel(service.update(id, model));
+        // Correção Sprint 3: antes a senha era gravada em TEXTO PURO por este endpoint
+        model.setPassword(passwordEncoder.encode(model.getPassword()));
+        UsersResponseDTO updated = UsersResponseDTO.fromModel(service.update(id, model));
+
+        String ip = clientIp(request);
+        auditService.logUpdate("User", id, currentUser(), "Usuário atualizado", ip);
+        if (previousRole != model.getRole()) {
+            // Alteração crítica: mudança de privilégio gera evento próprio (gatilho de alerta)
+            auditService.logAction("ROLE_CHANGED", "User", id, currentUser(),
+                    "Perfil alterado de " + previousRole + " para " + model.getRole(), ip, "SUCCESS");
+        }
+        return updated;
     }
 
     /**
@@ -137,8 +168,18 @@ public class UserController {
     @DeleteMapping("/{id}")
     @Transactional
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable Long id, HttpServletRequest request) {
         service.delete(id);
+        auditService.logDelete("User", id, currentUser(), "Usuário removido", clientIp(request));
         return ResponseEntity.noContent().build();
+    }
+
+    private String currentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return (auth != null && auth.isAuthenticated()) ? auth.getName() : "ANONYMOUS";
+    }
+
+    private String clientIp(HttpServletRequest request) {
+        return ClientIpResolver.resolve(request);
     }
 }

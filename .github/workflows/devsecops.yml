@@ -86,9 +86,15 @@ jobs:
           semgrep scan --config p/java --config p/owasp-top-ten --metrics=off \
             --json --output semgrep-report.json API/src || true
 
+      # Exceções triadas (riscos aceitos e documentados). Continuam aparecendo no
+      # "Relatorio completo" acima, só não bloqueiam o merge:
+      #  - spring-actuator-dangerous-endpoints-enabled: expõe apenas health/prometheus,
+      #    na porta de gerenciamento 9090, NÃO publicada no host (só rede interna do Docker).
+      #    A regra é "generic" e não aceita nosemgrep em arquivo .properties.
       - name: Quality gate (bloqueia WARNING e ERROR)
         run: |
           semgrep scan --config p/java --config p/owasp-top-ten --metrics=off \
+            --exclude-rule java.spring.security.audit.spring-actuator-non-health-enabled.spring-actuator-dangerous-endpoints-enabled \
             --severity WARNING --severity ERROR --error API/src
 
       - name: Salvar relatorios

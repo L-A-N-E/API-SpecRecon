@@ -37,7 +37,7 @@ jobs:
     name: "1. Secret Scanning (TruffleHog)"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0        # historico completo: acha segredo ate em commit antigo
 
@@ -62,7 +62,7 @@ jobs:
 
       - name: Salvar relatorios
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: trufflehog-report
           path: trufflehog-report.*
@@ -77,7 +77,7 @@ jobs:
     container:
       image: semgrep/semgrep
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Relatorio completo
         run: |
@@ -93,7 +93,7 @@ jobs:
 
       - name: Salvar relatorios
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: semgrep-report
           path: semgrep-report.*
@@ -124,9 +124,9 @@ jobs:
       DB_USER: root
       DB_PASS: root
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: "21"
@@ -139,7 +139,7 @@ jobs:
 
       - name: Salvar resultado dos testes
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: junit-reports
           path: API/target/surefire-reports/

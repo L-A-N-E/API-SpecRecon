@@ -16,26 +16,26 @@ API RESTful desenvolvida em **Java + Spring Boot** para gerenciamento de veícul
 
 ## 📚 Índice
 
-- [🛠️ Tecnologias e Componentes](#🛠️-tecnologias-e-componentes)
-- [🏗️ Arquitetura](#🏗️-arquitetura)
+- [🛠️ Tecnologias e Componentes](#%EF%B8%8F-tecnologias-e-componentes)
+- [🏗️ Arquitetura](#%EF%B8%8F-arquitetura)
   - [Fluxo de Requisição](#fluxo-de-requisição)
   - [Diagrama de Componentes](#diagrama-de-componentes)
   - [Autenticação e Autorização](#autenticação-e-autorização)
   - [Perfis de Acesso (RBAC)](#perfis-de-acesso-rbac)
   - [Organização em Serviços (SOA)](#organização-em-serviços-soa)
-- [🛡️ Segurança](#🛡️-segurança)
-- [🚀 API REST - Endpoints](#🚀-api-rest--endpoints)
-- [💾 Banco de Dados e Migrações](#💾-banco-de-dados-e-migrações)
-- [▶️ Como Executar](#▶️-como-executar)
-  - [Opção A - Local (HTTP)](#opção-a--local-http)
-  - [Opção B - Docker (HTTPS)](#opção-b--docker-https)
-- [🧪 Como Testar](#🧪-como-testar)
+- [🛡️ Segurança](#%EF%B8%8F-segurança)
+- [🚀 API REST - Endpoints](#-api-rest---endpoints)
+- [💾 Banco de Dados e Migrações](#-banco-de-dados-e-migrações)
+- [▶️ Como Executar](#%EF%B8%8F-como-executar)
+  - [Opção A - Local (HTTP)](#opção-a---local-http)
+  - [Opção B - Docker (HTTPS)](#opção-b---docker-https)
+- [🧪 Como Testar](#-como-testar)
   - [Testes Manuais via Swagger](#testes-manuais-via-swagger)
   - [Testes Automatizados (JUnit)](#testes-automatizados-junit)
   - [Script de Cybersecurity](#script-de-cybersecurity)
-- [🎥 Demonstração](#🎥-demonstração)
-- [🔗 Links Úteis](#🔗-links-úteis)
-- [🩹 Problemas ao rodar o projeto?](#🩹-problemas-ao-rodar-o-projeto)
+- [🎥 Demonstração](#-demonstração)
+- [🔗 Links Úteis](#-links-úteis)
+- [🩹 Problemas ao rodar o projeto?](#-problemas-ao-rodar-o-projeto)
 
 ---
 

@@ -1,5 +1,7 @@
 package br.com.lane.SpecRecon.controller;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
 import br.com.lane.SpecRecon.security.ClientIpResolver;
 
 import br.com.lane.SpecRecon.dto.Unit.UnitsRequestDTO;
@@ -97,6 +99,9 @@ public class UnitController {
     @XSignatureHeader
     @DeleteMapping("/{id}")
     @Transactional
+    // Sprint 3 (OWASP API5 / ASVS 8.2.1): exclusão restrita a ADMIN e ANALYST (Gestor);
+    // USER (Brigadista) cria e edita, mas não apaga itens do catálogo.
+    @PreAuthorize("hasAnyRole('ADMIN', 'ANALYST')")
     public ResponseEntity<Void> delete(@PathVariable Long id, HttpServletRequest request) {
         service.delete(id);
         auditService.logDelete("Unit", id, currentUser(), "Unidade removida", clientIp(request));

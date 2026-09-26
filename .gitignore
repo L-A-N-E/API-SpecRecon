@@ -4,6 +4,11 @@ logs/
 *.log
 *.log.*.gz
 
+# Backups do banco (dump NUNCA vai para o GitHub)
+backups/
+*.sql.gz
+*.sql.gz.sha256
+
 # Segredos e certificados
 .env
 *.p12

@@ -1,5 +1,7 @@
 package br.com.lane.SpecRecon.exception;
 
+import br.com.lane.SpecRecon.security.ClientIpResolver;
+
 import br.com.lane.SpecRecon.service.AuditService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -151,11 +153,8 @@ public class GlobalExceptionHandler {
     }
 
     private String getClientIp(HttpServletRequest request) {
-        String xForwardedFor = request.getHeader("X-Forwarded-For");
-        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-            return xForwardedFor.split(",")[0].trim();
-        }
-        return request.getRemoteAddr();
+        // IP resolvido de forma segura (X-Forwarded-For só vale vindo de proxy confiável)
+        return ClientIpResolver.resolve(request);
     }
 
     private String getUsername(HttpServletRequest request) {

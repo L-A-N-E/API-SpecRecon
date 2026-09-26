@@ -317,7 +317,7 @@ echo -e "${WHITE}  FASE 8 — RATE LIMITING — Grand Finale${NC}"
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 
-echo -e "${BLUE}► PASSO 25 — Rate Limiting Bucket4j (esperado: 429 após 100 reqs)${NC}"
+echo -e "${BLUE}► PASSO 25 — Rate Limiting Bucket4j em /auth (esperado: 429 — limite anti brute force de 10 req/min por IP)${NC}"
 echo "  Enviando 105 requisições consecutivas..."
 for i in $(seq 1 105); do
   CODE=$(curl -sk -o /dev/null -w "%{http_code}" \
@@ -326,7 +326,7 @@ for i in $(seq 1 105); do
     -d '{"email":"x","password":"x"}')
   if [ "$CODE" = "429" ]; then
     echo -e "${RED}  🚫 Req $i: $CODE — BLOQUEADO!${NC}"
-    echo -e "${GREEN}  ✅ PASSOU — Rate limit ativado na req $i! Bucket4j protegeu contra DoS (max 100/min/IP)${NC}"
+    echo -e "${GREEN}  ✅ PASSOU — Rate limit ativado na req $i! Bucket4j bloqueou brute force de login (max 10/min/IP em /auth; 100/min nos demais)${NC}"
     break
   else
     echo "  Req $i: $CODE"

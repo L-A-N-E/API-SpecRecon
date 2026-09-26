@@ -1,5 +1,7 @@
 package br.com.lane.SpecRecon.controller;
 
+import br.com.lane.SpecRecon.security.ClientIpResolver;
+
 import br.com.lane.SpecRecon.dto.SpecificationType.SpecificationTypesRequestDTO;
 import br.com.lane.SpecRecon.dto.SpecificationType.SpecificationTypesResponseDTO;
 import br.com.lane.SpecRecon.model.SpecificationTypeModel;
@@ -103,9 +105,8 @@ public class SpecificationTypeController {
     }
 
     private String clientIp(HttpServletRequest request) {
-        String fwd = request.getHeader("X-Forwarded-For");
-        if (fwd != null && !fwd.isEmpty()) return fwd.split(",")[0].trim();
-        return request.getRemoteAddr();
+        // IP resolvido de forma segura (X-Forwarded-For só vale vindo de proxy confiável)
+        return ClientIpResolver.resolve(request);
     }
 
     private String currentUser() {

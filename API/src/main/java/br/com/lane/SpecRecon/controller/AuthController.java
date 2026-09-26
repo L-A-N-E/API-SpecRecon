@@ -1,5 +1,7 @@
 package br.com.lane.SpecRecon.controller;
 
+import br.com.lane.SpecRecon.security.ClientIpResolver;
+
 import br.com.lane.SpecRecon.dto.Users.UsersRequestDTO;
 import br.com.lane.SpecRecon.model.Role;
 import br.com.lane.SpecRecon.model.UserModel;
@@ -265,11 +267,8 @@ public class AuthController {
     }
 
     private String getClientIp(HttpServletRequest request) {
-        String xForwardedFor = request.getHeader("X-Forwarded-For");
-        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
-            return xForwardedFor.split(",")[0].trim();
-        }
-        return request.getRemoteAddr();
+        // IP resolvido de forma segura (X-Forwarded-For só vale vindo de proxy confiável)
+        return ClientIpResolver.resolve(request);
     }
 
     // DTOs para requisição/resposta

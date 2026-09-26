@@ -1,5 +1,7 @@
 package br.com.lane.SpecRecon.controller;
 
+import br.com.lane.SpecRecon.security.ClientIpResolver;
+
 import br.com.lane.SpecRecon.service.AuditService;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletRequest;
@@ -138,15 +140,8 @@ public class HoneypotController {
     }
 
     private String getClientIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        if (forwarded != null && !forwarded.isEmpty()) {
-            return forwarded.split(",")[0].trim();
-        }
-        String realIp = request.getHeader("X-Real-IP");
-        if (realIp != null && !realIp.isEmpty()) {
-            return realIp;
-        }
-        return request.getRemoteAddr();
+        // IP resolvido de forma segura (X-Forwarded-For só vale vindo de proxy confiável)
+        return ClientIpResolver.resolve(request);
     }
 
     private String collectHeaders(HttpServletRequest request) {
